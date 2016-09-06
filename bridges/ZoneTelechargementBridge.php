@@ -1,24 +1,16 @@
 <?php
 class ZoneTelechargementBridge extends BridgeAbstract {
 
-    public function loadMetadatas() {
+    const MAINTAINER = 'ORelio';
+    const NAME = 'Zone Telechargement Bridge';
+    const URI = 'https://www.zone-telechargement.com/';
+    const DESCRIPTION = 'RSS proxy returning the newest releases.<br />You may specify a category found in RSS URLs, else main feed is selected.';
 
-        $this->maintainer = 'ORelio';
-        $this->name = $this->getName();
-        $this->uri = $this->getURI();
-        $this->description = 'RSS proxy returning the newest releases.<br />You may specify a category found in RSS URLs, else main feed is selected.';
-        $this->update = "2016-03-16";
+    const PARAMETERS = array( array(
+        'category'=>array('name'=>'Category')
+    ));
 
-        $this->parameters[] =
-        '[
-            {
-                "name" : "Category",
-                "identifier" : "category"
-            }
-        ]';
-    }
-
-    public function collectData(array $param) {
+    public function collectData(){
 
         function StripCDATA($string) {
             $string = str_replace('<![CDATA[', '', $string);
@@ -26,33 +18,17 @@ class ZoneTelechargementBridge extends BridgeAbstract {
             return $string;
         }
 
-        $category = '/';
-        if (!empty($param['category']))
-            $category = '/'.$param['category'].'/';
-
-        $url = $this->getURI().$category.'rss.xml';
-        $html = $this->file_get_html($url) or $this->returnError('Could not request Zone Telechargement: '.$url, 500);
+        $url = $this->getURI().$this->getInput('category').'rss.xml';
+        $html = $this->getSimpleHTMLDOM($url) or $this->returnServerError('Could not request Zone Telechargement: '.$url);
 
         foreach($html->find('item') as $element) {
-            $item = new \Item();
-            $item->title = $element->find('title', 0)->plaintext;
-            $item->uri = str_replace('http://', 'https://', $element->find('guid', 0)->plaintext);
-            $item->timestamp = strtotime($element->find('pubDate', 0)->plaintext);
-            $item->content = StripCDATA($element->find('description', 0)->innertext);
+            $item = array();
+            $item['title'] = $element->find('title', 0)->plaintext;
+            $item['uri'] = str_replace('http://', 'https://', $element->find('guid', 0)->plaintext);
+            $item['timestamp'] = strtotime($element->find('pubDate', 0)->plaintext);
+            $item['content'] = StripCDATA($element->find('description', 0)->innertext);
             $this->items[] = $item;
             $limit++;
         }
-    }
-
-    public function getName() {
-        return 'Zone Telechargement Bridge';
-    }
-
-    public function getURI() {
-        return 'https://www.zone-telechargement.com/';
-    }
-
-    public function getCacheDuration() {
-        return 3600;
     }
 }
