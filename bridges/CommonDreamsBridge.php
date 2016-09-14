@@ -17,9 +17,7 @@ class CommonDreamsBridge extends FeedExpander {
 	}
 
 	private function CommonDreamsExtractContent($url) {
-		if($this->get_cached_time($url) <= strtotime('-24 hours'))
-			$this->remove_from_cache($url);
-		$html3 = $this->get_cached($url);
+		$html3 = $this->getSimpleHTMLDOMCached($url);
 		$text = $html3->find('div[class=field--type-text-with-summary]', 0)->innertext;
 		$html3->clear();
 		unset ($html3);

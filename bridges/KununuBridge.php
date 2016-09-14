@@ -1,5 +1,5 @@
 <?php
-class KununuBridge extends HttpCachingBridgeAbstract {
+class KununuBridge extends BridgeAbstract {
 	const MAINTAINER = "logmanoriginal";
 	const NAME = "Kununu Bridge";
 	const URI = "https://www.kununu.com/";
@@ -224,10 +224,7 @@ class KununuBridge extends HttpCachingBridgeAbstract {
 	*/
 	private function extract_full_description($uri){
 		// Load full article
-		if($this->get_cached_time($uri) <= strtotime('-24 hours'))
-			$this->remove_from_cache($uri);
-
-		$html = $this->get_cached($uri);
+		$html = $this->getSimpleHTMLDOMCached($uri);
 		if($html === false)
 			$this->returnServerError('Could not load full description!');
 
